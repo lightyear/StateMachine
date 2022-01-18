@@ -10,35 +10,35 @@ class StateMachineTests: XCTestCase {
     class TestState: State {
         var name: String
         var event: TestEvent?
-        let onEntryClosure: (() -> Void)?
-        let handleClosure: (() throws -> State)?
-        let onExitClosure: (() -> Void)?
+        let onEntryClosure: ((StateMachine) -> Void)?
+        let handleClosure: ((StateMachine, Event) throws -> State?)?
+        let onExitClosure: ((StateMachine) -> Void)?
 
-        init(name: String, onEntryClosure: (() -> Void)? = nil, handleClosure: (() throws -> State)? = nil, onExitClosure: (() -> Void)? = nil) {
+        init(name: String, onEntryClosure: ((StateMachine) -> Void)? = nil, handleClosure: ((StateMachine, Event) throws -> State?)? = nil, onExitClosure: ((StateMachine) -> Void)? = nil) {
             self.name = name
             self.onEntryClosure = onEntryClosure
             self.handleClosure = handleClosure
             self.onExitClosure = onExitClosure
         }
 
-        func onEntry() {
-            onEntryClosure?()
+        func onEntry(_ stateMachine: StateMachine) {
+            onEntryClosure?(stateMachine)
         }
 
-        func handle(event: Event) throws -> State {
+        func handle(_ stateMachine: StateMachine, event: Event) throws -> State {
             self.event = event as? TestEvent
             guard let closure = handleClosure else { return self }
-            return try closure()
+            return try closure(stateMachine, event) ?? self
         }
 
-        func onExit() {
-            onExitClosure?()
+        func onExit(_ stateMachine: StateMachine) {
+            onExitClosure?(stateMachine)
         }
     }
 
     func testEntersStartState() {
         var entered = false
-        _ = StateMachine(startState: TestState(name: "", onEntryClosure: { entered = true }))
+        _ = StateMachine(startState: TestState(name: "", onEntryClosure: { _ in entered = true }))
         expect(entered) == true
     }
 
@@ -50,7 +50,7 @@ class StateMachineTests: XCTestCase {
     }
 
     func testHandlingEventReturnsNextState() {
-        let start = TestState(name: "start", handleClosure: { TestState(name: "next") })
+        let start = TestState(name: "start", handleClosure: { _, _ in TestState(name: "next") })
         let stateMachine = StateMachine(startState: start)
         stateMachine.handle(event: TestEvent.foo)
         expect((stateMachine.currentState as? TestState)?.name) == "next"
@@ -58,7 +58,7 @@ class StateMachineTests: XCTestCase {
 
     func testLeavingStateInvokesOnExit() {
         var exited = false
-        let state = TestState(name: "", onExitClosure: { exited = true })
+        let state = TestState(name: "", onExitClosure: { _ in exited = true })
         let stateMachine = StateMachine(startState: state)
         stateMachine.handle(event: TestEvent.foo)
         expect(exited) == true
@@ -66,8 +66,8 @@ class StateMachineTests: XCTestCase {
 
     func testErrorHandlingEventResetsStateMachine() {
         var exited = false
-        let nextState = TestState(name: "next", handleClosure: { throw StateMachine.Error.eventNotHandled }, onExitClosure: { exited = true })
-        let start = TestState(name: "start", handleClosure: { nextState })
+        let nextState = TestState(name: "next", handleClosure: { _, _ in throw StateMachine.Error.eventNotHandled }, onExitClosure: { _ in exited = true })
+        let start = TestState(name: "start", handleClosure: { _, _ in nextState })
         let stateMachine = StateMachine(startState: start)
         stateMachine.handle(event: TestEvent.foo)
         stateMachine.handle(event: TestEvent.foo)

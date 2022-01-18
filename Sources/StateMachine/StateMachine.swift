@@ -16,14 +16,14 @@ public class StateMachine {
     public init(startState: State) {
         self.startState = startState
         currentState = startState
-        currentState.onEntry()
+        currentState.onEntry(self)
     }
 
     public func handle(event: Event) {
         do {
-            let nextState = try currentState.handle(event: event)
-            currentState.onExit()
-            nextState.onEntry()
+            let nextState = try currentState.handle(self, event: event)
+            currentState.onExit(self)
+            nextState.onEntry(self)
             currentState = nextState
         } catch {
             currentState = startState
