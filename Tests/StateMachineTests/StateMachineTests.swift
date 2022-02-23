@@ -53,7 +53,8 @@ class StateMachineTests: XCTestCase {
         let start = TestState(name: "start", handleClosure: { _, _ in TestState(name: "next") })
         let stateMachine = StateMachine(startState: start)
         stateMachine.handle(event: TestEvent.foo)
-        expect((stateMachine.currentState as? TestState)?.name) == "next"
+        let currentState = stateMachine.currentState as? TestState
+        expect(currentState?.name) == "next"
     }
 
     func testLeavingStateInvokesOnExit() {
@@ -71,7 +72,8 @@ class StateMachineTests: XCTestCase {
         let stateMachine = StateMachine(startState: start)
         stateMachine.handle(event: TestEvent.foo)
         stateMachine.handle(event: TestEvent.foo)
-        expect((stateMachine.currentState as? TestState)?.name) == "start"
+        let currentState = stateMachine.currentState as? TestState
+        expect(currentState?.name) == "start"
         expect(exited) == false
     }
 }
