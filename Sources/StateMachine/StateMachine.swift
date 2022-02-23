@@ -8,7 +8,7 @@
 
 import Foundation
 
-public class StateMachine {
+open class StateMachine {
     public enum Error: Swift.Error {
         case eventNotHandled
     }
@@ -17,29 +17,35 @@ public class StateMachine {
     private let context: ExecutionContext
     public private(set) var currentState: State
 
-    private init(state: State, context: ExecutionContext?) {
-        self.startState = state
-        currentState = state
+    public init(startState: State, context: ExecutionContext? = nil) {
+        self.startState = startState
+        currentState = startState
         self.context = context ?? DispatchQueue(label: "state machine")
-    }
-
-    convenience public init(startState: State, context: ExecutionContext? = nil) {
-        self.init(state: startState, context: context)
         self.context.sync {
             self.currentState.onEntry(self)
         }
     }
 
-    public func handle(event: Event) {
+    open func handle(event: Event) {
         context.sync {
             do {
+                log("State machine: \(currentState) handle \(event)")
                 let nextState = try currentState.handle(self, event: event)
                 currentState.onExit(self)
+                log("State machine: next state is \(nextState)")
                 nextState.onEntry(self)
                 currentState = nextState
             } catch {
-                currentState = startState
+                log("State machine: caught \(error); resetting")
+                reset()
             }
         }
+    }
+
+    open func log(_ message: String) {
+    }
+
+    open func reset() {
+        currentState = startState
     }
 }
