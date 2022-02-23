@@ -3,6 +3,7 @@
 //  StateMachine
 //
 //  Created by Steve Madsen on 1/18/22.
+//  Copyright © 2022 Light Year Software, LLC
 //
 
 import Foundation
