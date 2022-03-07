@@ -22,7 +22,11 @@ open class StateMachine {
         currentState = startState
         self.context = context ?? DispatchQueue(label: "state machine")
         self.context.sync {
-            self.currentState.onEntry(self)
+            do {
+                try self.currentState.onEntry(self)
+            } catch {
+                log("State machine: start state threw onEntry", error: error)
+            }
         }
     }
 
@@ -31,21 +35,26 @@ open class StateMachine {
             do {
                 log("State machine: \(currentState) handle \(event)")
                 let nextState = try currentState.handle(self, event: event)
-                currentState.onExit(self)
+                try currentState.onExit(self)
                 log("State machine: next state is \(nextState)")
-                nextState.onEntry(self)
+                try nextState.onEntry(self)
                 currentState = nextState
             } catch {
-                log("State machine: caught \(error); resetting")
+                log("State machine: error thrown while handling event; resetting", error: error)
                 reset()
             }
         }
     }
 
-    open func log(_ message: String) {
+    open func log(_ message: String, error: Swift.Error? = nil) {
     }
 
     open func reset() {
-        currentState = startState
+        do {
+            currentState = startState
+            try currentState.onEntry(self)
+        } catch {
+            log("State machine: error thrown during reset", error: error)
+        }
     }
 }
