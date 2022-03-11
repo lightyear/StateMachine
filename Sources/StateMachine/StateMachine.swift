@@ -37,8 +37,8 @@ open class StateMachine {
                 let nextState = try currentState.handle(self, event: event)
                 try currentState.onExit(self)
                 log("State machine: next state is \(nextState)")
-                try nextState.onEntry(self)
                 currentState = nextState
+                try currentState.onEntry(self)
             } catch {
                 log("State machine: error thrown while handling event; resetting", error: error)
                 reset()
