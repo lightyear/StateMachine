@@ -13,11 +13,11 @@ open class StateMachine {
         case eventNotHandled
     }
 
-    private let startState: State
+    private let startState: any State
     private let context: ExecutionContext
-    public private(set) var currentState: State
+    public private(set) var currentState: any State
 
-    public init(startState: State, context: ExecutionContext? = nil) {
+    public init(startState: some State, context: ExecutionContext? = nil) {
         self.startState = startState
         currentState = startState
         self.context = context ?? DispatchQueue(label: "state machine")
@@ -30,7 +30,7 @@ open class StateMachine {
         }
     }
 
-    open func handle(event: Event) {
+    open func handle(event: any Event) {
         context.sync {
             do {
                 log("State machine: \(currentState) handle \(event)")

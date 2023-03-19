@@ -11,10 +11,10 @@ class StateMachineTests: XCTestCase {
         var name: String
         var event: TestEvent?
         let onEntryClosure: ((StateMachine) -> Void)?
-        let handleClosure: ((StateMachine, Event) throws -> State?)?
+        let handleClosure: ((StateMachine, any Event) throws -> (any State)?)?
         let onExitClosure: ((StateMachine) -> Void)?
 
-        init(name: String, onEntryClosure: ((StateMachine) -> Void)? = nil, handleClosure: ((StateMachine, Event) throws -> State?)? = nil, onExitClosure: ((StateMachine) -> Void)? = nil) {
+        init(name: String, onEntryClosure: ((StateMachine) -> Void)? = nil, handleClosure: ((StateMachine, any Event) throws -> (any State)?)? = nil, onExitClosure: ((StateMachine) -> Void)? = nil) {
             self.name = name
             self.onEntryClosure = onEntryClosure
             self.handleClosure = handleClosure
@@ -25,7 +25,7 @@ class StateMachineTests: XCTestCase {
             onEntryClosure?(stateMachine)
         }
 
-        func handle(_ stateMachine: StateMachine, event: Event) throws -> State {
+        func handle(_ stateMachine: StateMachine, event: any Event) throws -> any State {
             self.event = event as? TestEvent
             guard let closure = handleClosure else { return self }
             return try closure(stateMachine, event) ?? self

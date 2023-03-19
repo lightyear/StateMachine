@@ -13,7 +13,7 @@ public protocol Event {
 
 public protocol State {
     func onEntry(_ stateMachine: StateMachine) throws
-    func handle(_ stateMachine: StateMachine, event: Event) throws -> State
+    func handle(_ stateMachine: StateMachine, event: any Event) throws -> any State
     func onExit(_ stateMachine: StateMachine) throws
 }
 
@@ -21,7 +21,7 @@ public extension State {
     func onEntry(_ stateMachine: StateMachine) throws {
     }
 
-    func handle(_ stateMachine: StateMachine, event: Event) throws -> State {
+    func handle(_ stateMachine: StateMachine, event: any Event) throws -> any State {
         throw StateMachine.Error.eventNotHandled
     }
 
