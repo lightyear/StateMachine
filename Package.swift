@@ -12,7 +12,7 @@ let package = Package(
             targets: ["StateMachine"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/Quick/Nimble", from: "9.2.0")
+        .package(url: "https://github.com/Quick/Nimble", from: "11.2.1")
     ],
     targets: [
         .target(
